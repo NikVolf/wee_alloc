@@ -6,8 +6,14 @@ use core::cell::UnsafeCell;
 use core::ptr::NonNull;
 use memory_units::Pages;
 
+mod sys {
+    extern "C" {
+        pub fn alloc(pages: u32) -> usize;
+    }
+}
+
 pub(crate) unsafe fn alloc_pages(n: Pages) -> Result<NonNull<u8>, AllocErr> {
-    let ptr = wasm32::memory_grow(0, n.0);
+    let ptr = sys::alloc(n.0 as _);
     if ptr != usize::max_value() {
         let ptr = (ptr * PAGE_SIZE.0) as *mut u8;
         assert_is_word_aligned(ptr as *mut u8);
